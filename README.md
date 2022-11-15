@@ -2,7 +2,7 @@
 
 **VORVR** is "Virtual Routing Over VRrp".
 
-In short, this is a VyOS Handler for Routing on AWS, able to update AWS VPC Route Tables based on VRRP triggers.
+In short, this is a VyOS Handler for Routing on AWS, able to update AWS VPC Route Tables based on VRRP triggers. It also supports allocation of Elastic IP Addresses (EIP) to the active instance.
 
 Given this topology:
 
@@ -40,6 +40,8 @@ set high-availability vrrp group AWS vrid '10'
 
 **NOTE**: The VRRP configuration will set a *dummy* Virtual IP. This, of course, has no sense in the AWS Routing context.
 
+**NOTE**: The script invokes AWS EC2 APIs. Your instance needs to be able to reach the API endpoint via an internet connectivity (IGW/NAT) or using AWS Service Endpoints (*com.amazonaws.<region>.ec2*).
+
 ## Handler Configuration
 
 Right now, the only way to configure the handler is to edit the bash file itself.
@@ -47,6 +49,7 @@ Right now, the only way to configure the handler is to edit the bash file itself
 You will find the following array variables:
 * local_routes
 * cloud_routes
+* elastic_ips
 
 ## local_routes
 Here you can define the subnets that the handler will insert in the kernel routing table. These routes will be inserted on VRRP *Master* state, and removed on VRRP *Backup* (or failed) state.
@@ -71,4 +74,16 @@ Example:
 ```
 cloud_routes[0]='10.10.10.0/24:eth1:rtb-02127b9821a520aaf'
 cloud_routes[1]='pl-0fd84df436a7a4745:eth1:rtb-02127b9821a520aaf'
+```
+
+## elastic_ips
+Here you can define the different Elastic IP Addresses (EIP) that you want to associate with the active instance.
+
+The syntax is: `<EIPAlloc>:<Interface>:<SecondaryIP(optional)>`.
+
+**NOTE**: Even if you don't want to specify the optional Secondary IP, keep the last `:` of the string.
+
+Example:
+```
+elastic_ips[0]='eipalloc-0703a214298b14004:eth0:'
 ```

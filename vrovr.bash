@@ -23,6 +23,7 @@
 ## List of local routes and cloud routes
 declare -a local_routes
 declare -a cloud_routes
+declare -a elastic_ips
 
 # Local Routes
 # Format: VRF:route:interface
@@ -32,9 +33,14 @@ declare -a cloud_routes
 # Format: route:interface:aws-route-table-id
 #  (route can be a prefix list, beginning with pl-)
 
+# EIP / Elastic IP Addresses
+# Format: eipalloc:interface:(secondary ip - optional)
+#  (remember to specify all the required : !)
+
 local_routes[0]='TELCO:172.31.240.0/20:eth1'
 cloud_routes[0]='10.10.10.0/24:eth1:rtb-02127b9821a520aaf'
 cloud_routes[1]='pl-0fd84df436a7a4745:eth1:rtb-02127b9821a520aaf'
+elastic_ips[0]='eipalloc-0703a214298b14004:eth0:'
 
 defmetric=666
 
@@ -95,6 +101,20 @@ function active() {
         else
             aws ec2 replace-route --route-table-id $rtable --destination-cidr-block $subnet --network-interface-id $eni
         fi
+    done
+    
+    # Re-Alloc EIPs
+    for eipdata in "${elastic_ips[@]}"; do
+        IFS=":" read -r -a eip <<< "${eipdata}"
+        alloc="${eip[0]}"
+        iface="${eip[1]}"
+        secondary="${eip[2]}"
+        sec_cli=""
+        [[ ! -z "$secondary" ]] && sec_cli="--private-ip-address ${secondary}"
+        mac=$(cat /sys/class/net/$iface/address)
+        eni=$(curl -s http://169.254.169.254/latest/meta-data/network/interfaces/macs/$mac/interface-id)
+        echo "[EIP] Working on EIP: $alloc on $iface [$mac][$eni] (Secondary IP (if any): [$secondary])"
+        aws ec2 associate-address --allow-reassociation --allocation-id $alloc --network-interface-id $eni $sec_cli > /dev/null
     done
     
     exit
