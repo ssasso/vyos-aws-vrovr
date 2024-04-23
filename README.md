@@ -40,7 +40,7 @@ set high-availability vrrp group AWS vrid '10'
 
 **NOTE**: The VRRP configuration will set a *dummy* Virtual IP. This, of course, has no sense in the AWS Routing context.
 
-**NOTE**: The script invokes AWS EC2 APIs. Your instance needs to be able to reach the API endpoint via an internet connectivity (IGW/NAT) or using AWS Service Endpoints (*com.amazonaws.<region>.ec2*).
+**NOTE**: The script invokes AWS EC2 APIs. Your instance needs to be able to reach the API endpoint via an internet connectivity (IGW/NAT) or using AWS Service Endpoints (`com.amazonaws.<region>.ec2`).
 
 ## Handler Configuration
 
