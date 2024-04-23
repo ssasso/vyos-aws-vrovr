@@ -1,6 +1,6 @@
 # VyOS-AWS-VROVR
 
-**VORVR** is "Virtual Routing Over VRrp".
+**VROVR** is "Virtual Routing Over VRrp".
 
 In short, this is a VyOS Handler for Routing on AWS, able to update AWS VPC Route Tables based on VRRP triggers. It also supports allocation of Elastic IP Addresses (EIP) to the active instance.
 
